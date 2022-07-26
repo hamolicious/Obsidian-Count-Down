@@ -1,13 +1,14 @@
-import { App, Editor, MarkdownView, Modal, Notice, Plugin, PluginSettingTab, Setting } from 'obsidian';
+import { App, MarkdownPostProcessorContext, Plugin, PluginSettingTab, Setting } from 'obsidian';
+import moment from "moment";
 
 // Remember to rename these classes and interfaces!
 
 interface MyPluginSettings {
-	mySetting: string;
+	defaultDateSplitter: string;
 }
 
 const DEFAULT_SETTINGS: MyPluginSettings = {
-	mySetting: 'default'
+	defaultDateSplitter: '/'
 }
 
 export default class MyPlugin extends Plugin {
@@ -18,6 +19,10 @@ export default class MyPlugin extends Plugin {
 
 		// This adds a settings tab so the user can configure various aspects of the plugin
 		this.addSettingTab(new SampleSettingTab(this.app, this));
+
+		this.registerMarkdownPostProcessor(
+			this.countdownMarkdownPostProcessor
+		);
 	}
 
 	onunload() {
@@ -30,6 +35,29 @@ export default class MyPlugin extends Plugin {
 	async saveSettings() {
 		await this.saveData(this.settings);
 	}
+
+	countdownMarkdownPostProcessor(
+		el: HTMLElement,
+		ctx: MarkdownPostProcessorContext
+	) {
+
+		if (!doesContainDate(el.innerText))
+			return;
+
+		const date = el.innerText.slice(
+			el.innerText.indexOf(":") + 1,
+			el.innerText.indexOf(":") + 11
+		);
+
+		const diff = moment(date, 'DD/MM/YYYY').endOf('day').fromNow().replace('in ', '');
+		el.innerText = el.innerText.replace(':' + date + ':', diff)
+	}
+}
+
+function doesContainDate(text: string): boolean {
+	return (
+		null != text.match(/(:[0-9][0-9]\/[0-9][0-9]\/[0-9][0-9][0-9][0-9]:)/)
+	);
 }
 
 class SampleSettingTab extends PluginSettingTab {
@@ -45,18 +73,25 @@ class SampleSettingTab extends PluginSettingTab {
 
 		containerEl.empty();
 
-		containerEl.createEl('h2', {text: 'Settings for my awesome plugin.'});
+		containerEl.createEl("h2", {
+			text: "Settings for Obsidian-Count-Down.",
+		});
 
 		new Setting(containerEl)
-			.setName('Setting #1')
-			.setDesc('It\'s a secret')
-			.addText(text => text
-				.setPlaceholder('Enter your secret')
-				.setValue(this.plugin.settings.mySetting)
-				.onChange(async (value) => {
-					console.log('Secret: ' + value);
-					this.plugin.settings.mySetting = value;
-					await this.plugin.saveSettings();
-				}));
+			.setName("Default date splitter")
+			.setDesc(
+				"The default splitter for dates, for example 01/01/1982, the `/` is the splitter"
+			)
+			.addText((text) =>
+				text
+					.setPlaceholder(
+						"The default splitter for dates, for example 01/01/1982, the `/` is the splitter"
+					)
+					.setValue(this.plugin.settings.defaultDateSplitter)
+					.onChange(async (value) => {
+						this.plugin.settings.defaultDateSplitter = value;
+						await this.plugin.saveSettings();
+					})
+			);
 	}
 }
