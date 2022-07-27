@@ -7,26 +7,26 @@ import {
 } from "obsidian";
 import moment from "moment";
 
-interface MyPluginSettings {
+interface ObsidianCountdownSettings {
 	dateFormat: string;
 }
 
 declare global {
-	var settings: MyPluginSettings;
+	var settings: ObsidianCountdownSettings;
 }
 
-const DEFAULT_SETTINGS: MyPluginSettings = {
+const DEFAULT_SETTINGS: ObsidianCountdownSettings = {
 	dateFormat: "DD/MM/YYYY",
 };
 
-export default class MyPlugin extends Plugin {
-	settings: MyPluginSettings;
+export default class ObsidianCountdown extends Plugin {
+	settings: ObsidianCountdownSettings;
 
 	async onload() {
 		await this.loadSettings();
 
 		// This adds a settings tab so the user can configure various aspects of the plugin
-		this.addSettingTab(new SampleSettingTab(this.app, this));
+		this.addSettingTab(new ObsidianCountdownSettingTab(this.app, this));
 
 		this.registerMarkdownPostProcessor(async function (
 			el: HTMLElement,
@@ -87,10 +87,10 @@ function doesContainDate(text: string): boolean {
 	);
 }
 
-class SampleSettingTab extends PluginSettingTab {
-	plugin: MyPlugin;
+class ObsidianCountdownSettingTab extends PluginSettingTab {
+	plugin: ObsidianCountdown;
 
-	constructor(app: App, plugin: MyPlugin) {
+	constructor(app: App, plugin: ObsidianCountdown) {
 		super(app, plugin);
 		this.plugin = plugin;
 	}
