@@ -60,7 +60,8 @@ async function countdownMarkdownPostProcessor(
   if (!doesContainDate(el.innerText)) return;
 
 	for (let i = 0; i < el.innerText.length; i++) {
-		const text = el.innerText;
+		const text = el?.innerText;
+		if (!text) continue;
 		if (text[i] != ':') continue;
 
 		const date = el.innerText.slice(
@@ -72,7 +73,15 @@ async function countdownMarkdownPostProcessor(
 			.endOf("day")
 			.fromNow()
 			.replace("in ", "");
-		el.innerHTML = el.innerHTML.replace(":" + date + ":", formatDiff(diff));
+
+		// NOTE: figure out the way to add highlighting blocks
+		// el.innerHTML = el.innerHTML.replace(":" + date + ":", formatDiff(diff));
+
+		if (el?.textContent)
+			el.textContent = el.textContent?.replace(
+				":" + date + ":",
+				diff
+			);
 	}
 }
 

@@ -4,4 +4,5 @@
 	color: var(--text-on-accent) !important;
 	border-radius: 5px;
 	padding: 2px;
+	display: inline;
 }
