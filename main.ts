@@ -1,15 +1,25 @@
-import { App, MarkdownPostProcessorContext, Plugin, PluginSettingTab, Setting } from 'obsidian';
+import {
+	App,
+	MarkdownPostProcessorContext,
+	Plugin,
+	PluginSettingTab,
+	Setting,
+} from "obsidian";
 import moment from "moment";
 
-// Remember to rename these classes and interfaces!
-
 interface MyPluginSettings {
-	defaultDateSplitter: string;
+	dateSplitter: string;
+	dateFormat: string;
+}
+
+declare global {
+	var settings: MyPluginSettings;
 }
 
 const DEFAULT_SETTINGS: MyPluginSettings = {
-	defaultDateSplitter: '/'
-}
+	dateSplitter: "/",
+	dateFormat: "DD/MM/YYYY",
+};
 
 export default class MyPlugin extends Plugin {
 	settings: MyPluginSettings;
@@ -20,38 +30,47 @@ export default class MyPlugin extends Plugin {
 		// This adds a settings tab so the user can configure various aspects of the plugin
 		this.addSettingTab(new SampleSettingTab(this.app, this));
 
-		this.registerMarkdownPostProcessor(
-			this.countdownMarkdownPostProcessor
-		);
+		this.registerMarkdownPostProcessor(async function (
+			el: HTMLElement,
+			ctx: MarkdownPostProcessorContext
+		) {
+			countdownMarkdownPostProcessor(el, ctx);
+		});
 	}
 
-	onunload() {
-	}
+	onunload() {}
 
 	async loadSettings() {
-		this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData());
+		this.settings = Object.assign(
+			{},
+			DEFAULT_SETTINGS,
+			await this.loadData()
+		);
+
+		global.settings = this.settings;
 	}
 
 	async saveSettings() {
 		await this.saveData(this.settings);
 	}
+}
 
-	countdownMarkdownPostProcessor(
-		el: HTMLElement,
-		ctx: MarkdownPostProcessorContext
-	) {
+async function countdownMarkdownPostProcessor(
+  el: HTMLElement,
+  ctx: MarkdownPostProcessorContext,
+) {
+  if (!doesContainDate(el.innerText)) return;
 
-		if (!doesContainDate(el.innerText))
-			return;
+  const date = el.innerText.slice(
+    el.innerText.indexOf(":") + 1,
+    el.innerText.indexOf(":") + 11
+  );
 
-		const date = el.innerText.slice(
-			el.innerText.indexOf(":") + 1,
-			el.innerText.indexOf(":") + 11
-		);
-
-		const diff = moment(date, 'DD/MM/YYYY').endOf('day').fromNow().replace('in ', '');
-		el.innerText = el.innerText.replace(':' + date + ':', diff)
-	}
+  const diff = moment(date, global.settings.dateFormat)
+    .endOf("day")
+    .fromNow()
+    .replace("in ", "");
+  el.innerText = el.innerText.replace(":" + date + ":", diff);
 }
 
 function doesContainDate(text: string): boolean {
@@ -69,7 +88,7 @@ class SampleSettingTab extends PluginSettingTab {
 	}
 
 	display(): void {
-		const {containerEl} = this;
+		const { containerEl } = this;
 
 		containerEl.empty();
 
@@ -77,19 +96,35 @@ class SampleSettingTab extends PluginSettingTab {
 			text: "Settings for Obsidian-Count-Down.",
 		});
 
-		new Setting(containerEl)
-			.setName("Default date splitter")
+		const settings = new Setting(containerEl);
+		settings
+			.setName("Date Splitter")
 			.setDesc(
-				"The default splitter for dates, for example 01/01/1982, the `/` is the splitter"
+				"The splitter for dates, for example 01/01/1982, the `/` is the splitter"
 			)
 			.addText((text) =>
 				text
 					.setPlaceholder(
-						"The default splitter for dates, for example 01/01/1982, the `/` is the splitter"
+						"The splitter for dates, for example 01/01/1982, the `/` is the splitter"
 					)
-					.setValue(this.plugin.settings.defaultDateSplitter)
+					.setValue(this.plugin.settings.dateSplitter)
 					.onChange(async (value) => {
-						this.plugin.settings.defaultDateSplitter = value;
+						this.plugin.settings.dateSplitter = value;
+						await this.plugin.saveSettings();
+					})
+			);
+
+		settings
+			.setName("Date Format")
+			.setDesc("The format of the date you will use between the `:`")
+			.addText((text) =>
+				text
+					.setPlaceholder(
+						"The format of the date you will use between the `:`"
+					)
+					.setValue(this.plugin.settings.dateFormat)
+					.onChange(async (value) => {
+						this.plugin.settings.dateFormat = value;
 						await this.plugin.saveSettings();
 					})
 			);
