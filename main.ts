@@ -8,7 +8,6 @@ import {
 import moment from "moment";
 
 interface MyPluginSettings {
-	dateSplitter: string;
 	dateFormat: string;
 }
 
@@ -17,7 +16,6 @@ declare global {
 }
 
 const DEFAULT_SETTINGS: MyPluginSettings = {
-	dateSplitter: "/",
 	dateFormat: "DD/MM/YYYY",
 };
 
@@ -61,16 +59,21 @@ async function countdownMarkdownPostProcessor(
 ) {
   if (!doesContainDate(el.innerText)) return;
 
-  const date = el.innerText.slice(
-    el.innerText.indexOf(":") + 1,
-    el.innerText.indexOf(":") + 11
-  );
+	for (let i = 0; i < el.innerText.length; i++) {
+		const text = el.innerText;
+		if (text[i] != ':') continue;
 
-  const diff = moment(date, global.settings.dateFormat)
-    .endOf("day")
-    .fromNow()
-    .replace("in ", "");
-  el.innerHTML = el.innerHTML.replace(":" + date + ":", formatDiff(diff));
+		const date = el.innerText.slice(
+			i + 1,
+			i + 11
+		);
+
+		const diff = moment(date, global.settings.dateFormat)
+			.endOf("day")
+			.fromNow()
+			.replace("in ", "");
+		el.innerHTML = el.innerHTML.replace(":" + date + ":", formatDiff(diff));
+	}
 }
 
 function formatDiff(diff: string): string {
@@ -103,23 +106,6 @@ class SampleSettingTab extends PluginSettingTab {
 		containerEl.createEl("i", {
 			text: "If you want to create a date to count up/down to, just place a date into `:` i.e. :01/01/1970:",
 		});
-
-		new Setting(containerEl)
-			.setName("Date Splitter")
-			.setDesc(
-				"The splitter for dates, for example 01/01/1982, the `/` is the splitter"
-			)
-			.addText((text) =>
-				text
-					.setPlaceholder(
-						"The splitter for dates, for example 01/01/1982, the `/` is the splitter"
-					)
-					.setValue(this.plugin.settings.dateSplitter)
-					.onChange(async (value) => {
-						this.plugin.settings.dateSplitter = value;
-						await this.plugin.saveSettings();
-					})
-			);
 
 		new Setting(containerEl)
 			.setName("Date Format")
