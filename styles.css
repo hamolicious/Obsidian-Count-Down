@@ -1,4 +1,9 @@
 /* Sets all the text color to red! */
-body {
-	color: red;
+:root {
+  --main-bg-color: rgb(87, 1, 86);
+}
+.countdown-highlight {
+	background-color: var(--main-bg-color) !important;
+	border-radius: 5px;
+	padding: 2px;
 }
