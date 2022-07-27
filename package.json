@@ -1,6 +1,6 @@
 {
 	"name": "obsidian-count-down",
-	"version": "1.0.0",
+	"version": "1.1.0",
 	"description": "Adds a count down to selected dates for easier timing and tracking of TODOs or events",
 	"main": "main.js",
 	"scripts": {
