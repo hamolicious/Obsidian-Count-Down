@@ -70,7 +70,12 @@ async function countdownMarkdownPostProcessor(
     .endOf("day")
     .fromNow()
     .replace("in ", "");
-  el.innerText = el.innerText.replace(":" + date + ":", diff);
+  el.innerHTML = el.innerHTML.replace(":" + date + ":", formatDiff(diff));
+}
+
+function formatDiff(diff: string): string {
+	const cls = 'countdown-highlight'
+	return `<mark class="${cls}">${diff}</mark>`;
 }
 
 function doesContainDate(text: string): boolean {
@@ -95,9 +100,11 @@ class SampleSettingTab extends PluginSettingTab {
 		containerEl.createEl("h2", {
 			text: "Settings for Obsidian-Count-Down.",
 		});
+		containerEl.createEl("i", {
+			text: "If you want to create a date to count up/down to, just place a date into `:` i.e. :01/01/1970:",
+		});
 
-		const settings = new Setting(containerEl);
-		settings
+		new Setting(containerEl)
 			.setName("Date Splitter")
 			.setDesc(
 				"The splitter for dates, for example 01/01/1982, the `/` is the splitter"
@@ -114,7 +121,7 @@ class SampleSettingTab extends PluginSettingTab {
 					})
 			);
 
-		settings
+		new Setting(containerEl)
 			.setName("Date Format")
 			.setDesc("The format of the date you will use between the `:`")
 			.addText((text) =>
