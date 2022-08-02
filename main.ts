@@ -60,10 +60,7 @@ async function countdownMarkdownPostProcessor(
 			i + 11
 		);
 
-		const diff = moment(
-			date,
-			this.settings.dateFormat
-		)
+		const diff = moment(date, "DD/MM/YYYY")
 			.endOf("day")
 			.fromNow()
 			.replace("in ", "");
