@@ -4,15 +4,11 @@ import {
 	Plugin,
 	PluginSettingTab,
 	Setting,
+	moment,
 } from "obsidian";
-import moment from "obsidian/node_modules/moment";
 
 interface ObsidianCountdownSettings {
 	dateFormat: string;
-}
-
-declare global {
-	var settings: ObsidianCountdownSettings;
 }
 
 const DEFAULT_SETTINGS: ObsidianCountdownSettings = {
@@ -41,8 +37,6 @@ export default class ObsidianCountdown extends Plugin {
 			DEFAULT_SETTINGS,
 			await this.loadData()
 		);
-
-		global.settings = this.settings;
 	}
 
 	async saveSettings() {
@@ -66,7 +60,10 @@ async function countdownMarkdownPostProcessor(
 			i + 11
 		);
 
-		const diff = moment(date, global.settings.dateFormat)
+		const diff = moment(
+			date,
+			this.settings.dateFormat
+		)
 			.endOf("day")
 			.fromNow()
 			.replace("in ", "");
