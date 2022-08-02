@@ -5,7 +5,7 @@ import {
 	PluginSettingTab,
 	Setting,
 } from "obsidian";
-import moment from "moment";
+import moment from "obsidian/node_modules/moment";
 
 interface ObsidianCountdownSettings {
 	dateFormat: string;
