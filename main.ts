@@ -28,12 +28,9 @@ export default class ObsidianCountdown extends Plugin {
 		// This adds a settings tab so the user can configure various aspects of the plugin
 		this.addSettingTab(new ObsidianCountdownSettingTab(this.app, this));
 
-		this.registerMarkdownPostProcessor(async function (
-			el: HTMLElement,
-			ctx: MarkdownPostProcessorContext
-		) {
-			countdownMarkdownPostProcessor(el, ctx);
-		});
+		this.registerMarkdownPostProcessor(
+			countdownMarkdownPostProcessor
+		);
 	}
 
 	onunload() {}
